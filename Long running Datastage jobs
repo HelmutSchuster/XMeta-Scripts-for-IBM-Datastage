@@ -1,0 +1,16 @@
+SELECT 
+  e.JOBNAME as Job_Name,
+  r.INVOCATIONID as Invocation_Id,
+  r.RUNSTARTTIMESTAMP + 2 HOURS as Start_Time,  --server has UCT time
+  HOUR (current_timestamp - 2 hours - r.RUNSTARTTIMESTAMP) as Hours_Running
+FROM
+  DSODB.JOBEXEC e
+  Inner Join DSODB.JOBRUN r on e.JOBID = r.JOBID
+Where
+  r.RUNSTARTTIMESTAMP > Current_Date - 7 Day  --limit the history to 1 week
+  and r.RUNMAJORSTATUS = 'STA'  -- all started jobs...
+  and r.RUNENDTIMESTAMP is null  -- ...that didn't end yet.
+  and HOUR (current_timestamp - 2 hours - r.RUNSTARTTIMESTAMP) > 8  --filters all jobs that are running longer than 8 hours 
+  --and e.PROJECTNAME = 'ProjectName'  --modify to your needs
+  --and e.FOLDERPATH = '\Jobs\MyFolder'  --modify to your needs
+Order by RUNSTARTTIMESTAMP Desc
